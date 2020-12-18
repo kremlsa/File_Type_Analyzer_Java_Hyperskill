@@ -1,0 +1,461 @@
+type: edu
+custom_name: stage4
+files:
+- name: src/analyzer/Main.java
+  visible: true
+  text: |
+    package analyzer;
+
+    public class Main {
+        public static void main(String[] args) {
+            System.out.println("Hello World!");
+        }
+    }
+  learner_created: false
+- name: test/Clue.java
+  visible: false
+  text: |2
+
+    public class Clue {
+        public String first;
+        public String second;
+        public String feedback;
+
+        public Clue(String first, String second, String feedback) {
+            this.first = first;
+            this.second = second;
+            this.feedback = feedback;
+        }
+    }
+  learner_created: false
+- name: test/MainTest.java
+  visible: false
+  text: "\nimport analyzer.Main;\nimport org.hyperskill.hstest.stage.StageTest;\n\
+    import org.hyperskill.hstest.testcase.CheckResult;\nimport org.hyperskill.hstest.testcase.TestCase;\n\
+    import org.junit.AfterClass;\nimport org.junit.Assert;\nimport org.junit.BeforeClass;\n\
+    \nimport java.io.File;\nimport java.io.IOException;\nimport java.lang.management.ManagementFactory;\n\
+    import java.nio.file.Files;\nimport java.nio.file.Paths;\nimport java.util.List;\n\
+    \npublic class MainTest extends StageTest<Clue> {\n    private static final String\
+    \ CURRENT_DIR = System.getProperty(\"user.dir\") + File.separator;\n    \n   \
+    \ private static String testFolder = \"test_files\";\n    private static String\
+    \ files = testFolder + File.separator;\n    \n    private static String patternsDb\
+    \ = \"patterns.db\";\n    private static final String patterns =\n        \"1;\\\
+    \"%PDF-\\\";\\\"PDF document\\\"\\n\" +\n        \"2;\\\"pmview\\\";\\\"PCP pmview\
+    \ config\\\"\\n\" +\n        \"4;\\\"PK\\\";\\\"Zip archive\\\"\\n\" +\n     \
+    \   \"5;\\\"vnd.oasis.opendocument.presentation\\\";\\\"OpenDocument presentation\\\
+    \"\\n\" +\n        \"6;\\\"W.o.r.d\\\";\\\"MS Office Word 2003\\\"\\n\" +\n  \
+    \      \"6;\\\"P.o.w.e.r.P.o.i\\\";\\\"MS Office PowerPoint 2003\\\"\\n\" +\n\
+    \        \"7;\\\"word/_rels\\\";\\\"MS Office Word 2007+\\\"\\n\" +\n        \"\
+    7;\\\"ppt/_rels\\\";\\\"MS Office PowerPoint 2007+\\\"\\n\" +\n        \"7;\\\"\
+    xl/_rels\\\";\\\"MS Office Excel 2007+\\\"\\n\" +\n        \"8;\\\"-----BEGIN\\\
+    \\ CERTIFICATE-----\\\";\\\"PEM certificate\\\"\\n\" +\n        \"9;\\\"ftypjp2\\\
+    \";\\\"ISO Media JPEG 2000\\\"\\n\" +\n        \"9;\\\"ftypiso2\\\";\\\"ISO Media\
+    \ MP4 Base Media v2\\\"\\n\";\n\n\n    public MainTest() throws Exception {\n\
+    \        super(Main.class);\n    }\n\n    @Override\n    public List<TestCase<Clue>>\
+    \ generate() {\n        return List.of(\n            //Testing basic cases\n \
+    \           //PDF\n            new TestCase<Clue>()\n                .addArguments(new\
+    \ String[]\n                    {testFolder, patternsDb})\n                .addFile(patternsDb,\
+    \ patterns)\n                .addFile(files + \"doc.pdf\", \"PFDF%PDF-PDF\")\n\
+    \                .addFile(files + \"text.pdf\", \"PFPDF-PDFABC\")\n          \
+    \      .setAttach(new Clue(\n                    \"doc.pdf: PDF document\",\n\
+    \                    \"text.pdf: Unknown file type\",\n                    \"\
+    Wrong answer for files with PDF documents\")),\n\n            //Zip archive\n\
+    \            new TestCase<Clue>()\n                .addArguments(new String[]\
+    \ {testFolder, patternsDb})\n                .addFile(patternsDb, patterns)\n\
+    \                .addFile(files + \"doc.zip\", \"PCK\")\n                .addFile(files\
+    \ + \"doc1.zip\", \"PKC\")\n                .setAttach(new Clue(\n           \
+    \         \"doc.zip: Unknown file type\" ,\n                    \"doc1.zip: Zip\
+    \ archive\",\n                    \"Wrong answer for files with Zip archives\"\
+    )),\n\n            //PCP pmview config\n            new TestCase<Clue>()\n   \
+    \             .addArguments(new String[]\n                    {testFolder, patternsDb})\n\
+    \                .addFile(patternsDb, patterns)\n                .addFile(files\
+    \ + \"main\", \"pmview\")\n                .addFile(files + \"main.config\", \"\
+    pmconfigview\")\n                .setAttach(new Clue(\n                    \"\
+    main: PCP pmview config\",\n                    \"main.config: Unknown file type\"\
+    ,\n                    \"Wrong answer for PCP pmview config files\")),\n\n   \
+    \         //OpenDocument presentation\n            new TestCase<Clue>()\n    \
+    \            .addArguments(new String[]\n                    {testFolder, patternsDb})\n\
+    \                .addFile(patternsDb, patterns)\n                .addFile(files\
+    \ + \"slides1.odp\", \"vnd.oasis.opendocument.presentation\")\n              \
+    \  .addFile(files + \"slides2.odp\", \"vnd.oasis.microsoft.presentation\")\n \
+    \               .setAttach(new Clue(\n                    \"slides1.odp: OpenDocument\
+    \ presentation\",\n                    \"slides2.odp: Unknown file type\",\n \
+    \                   \"\")),\n\n            //MS Office Word 2003\n           \
+    \ new TestCase<Clue>()\n                .addArguments(new String[]\n         \
+    \           {testFolder, patternsDb})\n                .addFile(patternsDb, patterns)\n\
+    \                .addFile(files + \"txt.doc\", \"wwwwwwwwW.o.r.d\")\n        \
+    \        .addFile(files + \"doc.txt\", \"W.o.r.kwwwwwwww\")\n                .setAttach(new\
+    \ Clue(\n                    \"doc.txt: Unknown file type\",\n               \
+    \     \"txt.doc: MS Office Word 2003\",\n                    \"Wrong answer for\
+    \ Word 2003 files\")),\n\n            //MS Office PowerPoint 2003\n          \
+    \  new TestCase<Clue>()\n                .addArguments(new String[]\n        \
+    \            {testFolder, patternsDb})\n                .addFile(patternsDb, patterns)\n\
+    \                .addFile(files + \"slides1.ptp\", \"P.o.w.e.r.P.o.i\")\n    \
+    \            .addFile(files + \"slides2.ptp\", \"P.o.w.e.r.\\\\Sh.o.i\")\n   \
+    \             .setAttach(new Clue(\n                    \"slides1.ptp: MS Office\
+    \ PowerPoint 2003\",\n                    \"slides2.ptp: Unknown file type\",\n\
+    \                    \"\")),\n\n            //MS Office Word 2007+\n         \
+    \   new TestCase<Clue>()\n                .addArguments(new String[]\n       \
+    \             {testFolder, patternsDb})\n                .addFile(patternsDb,\
+    \ patterns)\n                .addFile(files + \"txt.doc\", \"\\\\word/_rels\"\
+    )\n                .addFile(files + \"doc.txt\", \"word/\\\\_rels\")\n       \
+    \         .setAttach(new Clue(\n                    \"doc.txt: Unknown file type\"\
+    ,\n                    \"txt.doc: MS Office Word 2007+\",\n                  \
+    \  \"Wrong answer for Word 2007+ files\")),\n\n            //MS Office PowerPoint\
+    \ 2007+\n            new TestCase<Clue>()\n                .addArguments(new String[]\n\
+    \                    {testFolder, patternsDb})\n                .addFile(patternsDb,\
+    \ patterns)\n                .addFile(files + \"pres1.pptx\", \"afeefa%ppt/_relsasdad\"\
+    )\n                .addFile(files + \"pres2.pptx\", \"ppasfsfafdaet/_rels\")\n\
+    \                .setAttach(new Clue(\n                    \"pres1.pptx: MS Office\
+    \ PowerPoint 2007+\",\n                    \"pres2.pptx: Unknown file type\",\n\
+    \                    \"\")),\n\n            //MS Office Excel 2007+\n        \
+    \    new TestCase<Clue>()\n                .addArguments(new String[]\n      \
+    \              {testFolder, patternsDb})\n                .addFile(patternsDb,\
+    \ patterns)\n                .addFile(files + \"sheet1.xls\", \"asdaxl/_rels\"\
+    )\n                .addFile(files + \"sheet2.xls\", \"x2/_reasdadls\")\n     \
+    \           .setAttach(new Clue(\n                    \"sheet1.xls: MS Office\
+    \ Excel 2007+\",\n                    \"sheet2.xls: Unknown file type\",\n   \
+    \                 \"Wrong answer for Excel 2007+ files\")),\n\n            //PEM\
+    \ certificate\n            new TestCase<Clue>()\n                .addArguments(new\
+    \ String[]\n                    {testFolder, patternsDb})\n                .addFile(patternsDb,\
+    \ patterns)\n                .addFile(files + \"cert.pem\", \"\\\\\\\\\\\\\\\\\
+    \\\\aasdw-----BEGIN\\\\ CERTIFICATE-----\")\n                .addFile(files +\
+    \ \"cert_core.pem\", \"\\\\\\\\\\\\\\\\\\\\adww-----BEGIN\\\\CERTIFICATE-----\"\
+    )\n                .setAttach(new Clue(\n                    \"cert.pem: PEM certificate\"\
+    ,\n                    \"cert_core.pem: Unknown file type\",\n               \
+    \     \"\")),\n\n            //ISO Media JPEG 2000\n            new TestCase<Clue>()\n\
+    \                .addArguments(new String[]\n                    {testFolder,\
+    \ patternsDb})\n                .addFile(patternsDb, patterns)\n             \
+    \   .addFile(files + \"1.jpg\", \"ftypjp2ddddddaa\")\n                .addFile(files\
+    \ + \"2.jpg\", \"ftypdddjp2dadad\")\n                .setAttach(new Clue(\n  \
+    \                  \"1.jpg: ISO Media JPEG 2000\",\n                    \"2.jpg:\
+    \ Unknown file type\",\n                    \"Wrong answer for ISO Media JPEG\
+    \ 2000 files\")),\n\n            //ISO Media MP4 Base Media v2\n            new\
+    \ TestCase<Clue>()\n                .addArguments(new String[]\n             \
+    \       {testFolder, patternsDb})\n                .addFile(patternsDb, patterns)\n\
+    \                .addFile(files + \"tape.jpg\", \"ftypiso2mp4\")\n           \
+    \     .addFile(files + \"tape.mp4\", \"mp4ffttypiso2\")\n                .setAttach(new\
+    \ Clue(\n                    \"tape.jpg: ISO Media MP4 Base Media v2\",\n    \
+    \                \"tape.mp4: Unknown file type\",\n                    \"\")),\n\
+    \n            //Testing patterns priority\n            new TestCase<Clue>()\n\
+    \                .addArguments(new String[]\n                    {testFolder,\
+    \ patternsDb})\n                .addFile(patternsDb, patterns)\n             \
+    \   .addFile(files + \"tape2.jpg\", \"PK W.o.r.d\")\n                .addFile(files\
+    \ + \"tape2.mp4\", \"%PDF-mp4fftypiso2\")\n                .setAttach(new Clue(\n\
+    \                    \"tape2.jpg: MS Office Word 2003\",\n                   \
+    \ \"tape2.mp4: ISO Media MP4 Base Media v2\",\n                    \"Wrong answer\
+    \ white testing priority\")),\n\n            new TestCase<Clue>()\n          \
+    \      .addArguments(new String[]\n                    {testFolder, patternsDb})\n\
+    \                .addFile(patternsDb, patterns)\n                .addFile(files\
+    \ + \"tape3.jpg\", \"-----BEGIN\\\\ CERTIFICATE-----pmview\")\n              \
+    \  .addFile(files + \"tape3.mp4\", \"%PDF-ftypppfW.o.r.dftypiso\")\n         \
+    \       .setAttach(new Clue(\n                    \"tape3.jpg: PEM certificate\"\
+    ,\n                    \"tape3.mp4: MS Office Word 2003\",\n                 \
+    \   \"\"))\n        );\n    }\n\n    @Override\n    public CheckResult check(String\
+    \ reply, Clue clue) {\n        String actual = reply.strip();\n\n        if (!actual.contains(clue.first))\
+    \ {\n            return CheckResult.wrong(\n                clue.feedback + \"\
+    \\n\\n\" +\n                    \"Cannot find a line \" + clue.first + \"\\nYour\
+    \ output:\\n\" + actual\n            );\n        }\n\n        if (!actual.contains(clue.second))\
+    \ {\n            return CheckResult.wrong(\n                clue.feedback + \"\
+    \\n\\n\" +\n                    \"Cannot find a line \" + clue.second + \"\\nYour\
+    \ output:\\n\" + actual\n            );\n        }\n\n        return CheckResult.correct();\n\
+    \    }\n\n    @BeforeClass\n    public static void generateTestFilesDirectory()\
+    \ {\n\n        deleteTestFilesDirectory();\n\n        try {\n            Files.deleteIfExists(Paths.get(CURRENT_DIR\
+    \ + testFolder));\n        }\n        catch (IOException ex) {\n\n        }\n\
+    \        try {\n            Files.createDirectory(Paths.get(CURRENT_DIR + testFolder));\n\
+    \        }\n        catch (IOException ex) {\n\n        }\n    }\n\n\n    @AfterClass\n\
+    \    public static void deleteTestFilesDirectory() {\n        try {\n        \
+    \    Files.deleteIfExists(Paths.get(CURRENT_DIR + testFolder));\n        }\n \
+    \       catch (IOException ex) {\n\n\n        }\n    }\n\n}\n"
+  learner_created: false
+- name: src/analyzer/Kmp.java
+  visible: true
+  text: |
+    package analyzer;
+
+    import java.util.ArrayList;
+
+
+    public class Kmp {
+        public static int[] prefixFunction(String str) {
+
+            int[] prefixFunc = new int[str.length()];
+
+            for (int i = 1; i < str.length(); i++) {
+                int j = prefixFunc[i - 1];
+
+                while (j > 0 && str.charAt(i) != str.charAt(j)) {
+                    j = prefixFunc[j - 1];
+                }
+                if (str.charAt(i) == str.charAt(j)) {
+                    j += 1;
+                }
+                prefixFunc[i] = j;
+            }
+            return prefixFunc;
+        }
+
+        public static String search(String fileName, String pattern, String type) {
+
+            byte[] data = Utils.readFileB(fileName);
+            Long startTime;
+            String text  = new String(data);
+            startTime = System.nanoTime();
+            int[] prefixFunc = prefixFunction(pattern);
+            ArrayList<Integer> occurrences = new ArrayList<Integer>();
+            int j = 0;
+            for (int i = 0; i < text.length(); i++) {
+                while (j > 0 && text.charAt(i) != pattern.charAt(j)) {
+                    j = prefixFunc[j - 1];
+                }
+                if (text.charAt(i) == pattern.charAt(j)) {
+                    j += 1;
+                }
+                if (j == pattern.length()) {
+                    occurrences.add(i - j + 1);
+                    j = prefixFunc[j - 1];
+                    break;
+                }
+            }
+            if (occurrences.size() > 0) {
+                //System.out.println(type);
+                //System.out.println("It took " + Utils.deltaTime(startTime, System.nanoTime()) + " seconds");
+                return type;
+            }
+            else {
+                //System.out.println("Unknown file type");
+                //System.out.println("It took " + Utils.deltaTime(startTime, System.nanoTime()) + " seconds");
+                return "Unknown file type";
+            }
+
+        }
+    }
+  learner_created: true
+- name: src/analyzer/SimpleSearch.java
+  visible: true
+  text: |-
+    package analyzer;
+
+
+    public class SimpleSearch {
+
+        public static void search(String fileName, String pattern, String type) {
+            byte[] data = Utils.readFileB(fileName);
+            Long startTime;
+            String body = new String(data);
+            startTime = System.nanoTime();
+            if (containsPattern(body, pattern)) {
+                System.out.println(type);
+                System.out.println("It took " + Utils.deltaTime(startTime, System.nanoTime()) + " seconds");
+            } else {
+                System.out.println("Unknown file type");
+                System.out.println("It took " + Utils.deltaTime(startTime, System.nanoTime()) + " seconds");
+            }
+        }
+
+        public static boolean containsPattern(String text, String pattern) {
+            if (text.length() < pattern.length()) {
+                return false;
+            }
+
+            for (int i = 0; i < text.length() - pattern.length() + 1; i++) {
+                boolean patternIsFound = true;
+
+                for (int j = 0; j < pattern.length(); j++) {
+                    if (text.charAt(i + j) != pattern.charAt(j)) {
+                        patternIsFound = false;
+                        break;
+                    }
+                }
+
+                if (patternIsFound) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+  learner_created: true
+- name: src/analyzer/MTchecker.java
+  visible: true
+  text: |
+    package analyzer;
+
+    import java.io.File;
+    import java.util.ArrayList;
+    import java.util.List;
+    import java.util.concurrent.*;
+
+    public class MTchecker {
+        ExecutorService executor;
+        ConcurrentLinkedQueue<String> processingQueue = new ConcurrentLinkedQueue<>();
+        public List<String> results = new CopyOnWriteArrayList<>();
+
+        public void addResult (String result) {
+            results.add(result);
+        }
+
+        public void printResults() {
+            results.forEach(x -> System.out.println(x));
+        }
+
+        public void start(String path, String pattern, String type) {
+            String[] pathnames;
+            File f = new File(path);
+            pathnames = f.list();
+            for (String s : pathnames) {
+                processingQueue.offer(s);
+            }
+            checking(processingQueue, path, pattern, type);
+        }
+
+
+
+
+        public void checking(ConcurrentLinkedQueue<String> processingQueue, String path, String pattern, String type) {
+            List<Future<Boolean>> futures = new ArrayList<>();
+            executor = Executors.newFixedThreadPool(processingQueue.size());
+            boolean result;
+            List<Callable<Boolean>> callables = new ArrayList<>();
+
+            while (!processingQueue.isEmpty()) {
+                callables.add(new CheckerThread(processingQueue.poll(), path, pattern, type, this));
+            }
+            try {
+                futures = executor.invokeAll(callables);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            for (Future<Boolean> future : futures) {
+                    try {
+                        result = future.get();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            for (Future<Boolean> future : futures) {
+                future.cancel(true);
+            }
+            executor.shutdown();
+            printResults();
+        }
+
+    }
+
+    class CheckerThread implements Callable<Boolean> {
+        String name;
+        String pattern;
+        String type;
+        String path;
+        MTchecker mt;
+
+        public CheckerThread(String name, String path, String pattern, String type, MTchecker mt){
+            this.path = path;
+            this.pattern = pattern;
+            this.type = type;
+            this.name = name;
+            this.mt = mt;
+
+        }
+        @Override
+        public Boolean call() {
+            String result = Kmp.search(path + "/" + name, pattern, type);
+            mt.addResult(name + ": " + result);
+
+            return true;
+        }
+
+    }
+  learner_created: true
+- name: src/analyzer/Utils.java
+  visible: true
+  text: |
+    package analyzer;
+
+    import java.io.*;
+    import java.nio.file.Files;
+    import java.nio.file.Path;
+    import java.nio.file.Paths;
+    import java.text.DecimalFormat;
+
+    public class Utils {
+        private static DecimalFormat df4 = new DecimalFormat("#.#####");
+
+        public static byte[] readFileB(String filepath) {
+            byte[] data;
+            Path path = Paths.get(filepath);
+            if (Files.exists(path) && !Files.isDirectory(path)) {
+                try {
+                    data = Files.readAllBytes(path);
+                    return data;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            data = new byte[0];
+            return data;
+        }
+
+        public static String deltaTime(Long start, Long end) {
+            Long delta = end - start;
+            return df4.format(((double) delta / 1_000_000_000));
+        }
+
+    }
+  learner_created: true
+- name: src/analyzer/Checker.java
+  visible: true
+  text: |
+    package analyzer;
+
+    import javafx.util.Pair;
+
+    public class Checker {
+        Pair<String, String> fileType;
+        String fileName;
+        String searchType;
+
+        public void setFileType(String pattern, String type) {
+            this.fileType = new Pair<>(pattern, type);
+        }
+
+        public void setSearchType(String setSearchType) {
+            this.searchType = setSearchType;
+        }
+
+        public String getPattern() {
+            String p = fileType.getKey();
+            p = p.replace("\"", "");
+            return p;
+        }
+
+        public String getType() {
+            String t = fileType.getValue();
+            t = t.replace("\"", "");
+            return t;
+        }
+
+        public void setFileName(String fileName) {
+            this.fileName = fileName;
+        }
+
+        public void startCheck(String[] args) {
+            setFileName(args[0]);
+            setFileType(args[1], args[2]);
+            MTchecker mt = new MTchecker();
+            mt.start(fileName, getPattern(), getType());
+        }
+
+
+    }
+  learner_created: true
+feedback_link: https://hyperskill.org/projects/64/stages/346/implement#comment
+status: Solved
+feedback:
+  message: Congratulations!
+  time: Fri, 18 Dec 2020 16:09:53 UTC
+record: 4
